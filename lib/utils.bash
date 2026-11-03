@@ -60,22 +60,25 @@ download_release() {
 	platform="$(get_platform)"
 	arch="$(get_arch)"
 
+	outdir="$(dirname "$(realpath "$filename")")"
+	tmp_filename="${TOOL_NAME}_${platform}_${arch}.tar.gz"
+
 	# release url: https://github.com/github/github-mcp-server/releases/download/v2.0.3/github-mcp-server_Linux_x86_64.tar.gz
 	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
 
-	checksum_url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${version}_checksum.txt"
+	checksum_url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${version}_checksums.txt"
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	curl "${curl_opts[@]}" -o "${outdir}/$tmp_filename" -C - "$url" || fail "Could not download $url"
 
-	echo "* Downloading $TOOL_NAME checksums $version..."
+	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
 	pushd "$(dirname "$(realpath "$filename")")"
-	echo "* validating checksum"
 	curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
 		sha256sum -c ||
 		fail "checksum validation failed"
 	popd
+	mv "${outdir}/$tmp_filename" "$filename"
 }
 
 install_version() {
