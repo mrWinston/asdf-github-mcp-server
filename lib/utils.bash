@@ -45,7 +45,7 @@ get_platform() {
 
 get_arch() {
 	case "$(uname -m)" in
-	x86_64) echo -n "x64_64" ;;
+	x86_64) echo -n "x86_64" ;;
 	aarch64 | arm64) echo -n "arm64" ;;
 	i386 | i486 | i586 | i686) echo -n "i386" ;;
 	*) fail "Unsupported architecture" ;;
