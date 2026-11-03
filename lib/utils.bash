@@ -2,8 +2,7 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for github-mcp-server.
-GH_REPO="https://github.com/mrWinston/asdf-github-mcp-server"
+GH_REPO="https://github.com/github/github-mcp-server"
 TOOL_NAME="github-mcp-server"
 TOOL_TEST="github-mcp-server --version"
 
@@ -36,16 +35,47 @@ list_all_versions() {
 	list_github_tags
 }
 
+get_platform() {
+	case "$OSTYPE" in
+	darwin*) echo -n "Darwin" ;;
+	linux*) echo -n "Linux" ;;
+	*) fail "Unsupported platform" ;;
+	esac
+}
+
+get_arch() {
+	case "$(uname -m)" in
+	x86_64) echo -n "x64_64" ;;
+	aarch64 | arm64) echo -n "arm64" ;;
+	i386 | i486 | i586 | i686) echo -n "i386" ;;
+	*) fail "Unsupported architecture" ;;
+	esac
+}
+
 download_release() {
-	local version filename url
+	local version filename url platform arch
 	version="$1"
 	filename="$2"
 
-	# TODO: Adapt the release URL convention for github-mcp-server
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	platform="$(get_platform)"
+	arch="$(get_arch)"
+
+	# release url: https://github.com/github/github-mcp-server/releases/download/v2.0.3/github-mcp-server_Linux_x86_64.tar.gz
+	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
+
+	checksum_url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${version}_checksum.txt"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+
+	echo "* Downloading $TOOL_NAME checksums $version..."
+	pushd "$(dirname "$(realpath "$filename")")"
+	echo "* validating checksum"
+	curl "${curl_opts[@]}" - "$checksum_url" |
+		grep "${platform}_${arch}" |
+		sha256sum -c ||
+		fail "checksum validation failed"
+	popd
 }
 
 install_version() {
