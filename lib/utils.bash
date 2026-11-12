@@ -60,9 +60,6 @@ download_release() {
 	platform="$(get_platform)"
 	arch="$(get_arch)"
 
-	# outdir="$(dirname "$(realpath "$filename")")"
-	outdir="$(dirname "$filename")"
-	tmp_filename="${TOOL_NAME}_${platform}_${arch}.tar.gz"
 
 	# release url: https://github.com/github/github-mcp-server/releases/download/v2.0.3/github-mcp-server_Linux_x86_64.tar.gz
 	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
@@ -70,16 +67,15 @@ download_release() {
 	checksum_url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${version}_checksums.txt"
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "${outdir}/$tmp_filename" -C - "$url" || fail "Could not download $url"
+	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
 
 	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
-	pushd "$outdir"
 
 	expectedSHA="$(curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
 		cut -d " " -f 1
 	)"
-	actualSHA="$(sha256sum "$tmp_filename" | cut -d " " -f 1)"
+	actualSHA="$(sha256sum "$filename" | cut -d " " -f 1)"
 
 	if [[ "$actualSHA" != "$expectedSHA" ]]; then
 		echo "Checksums don't match:"
@@ -87,13 +83,6 @@ download_release() {
 		echo "actual  : $actualSHA"
 		fail "checksum validation failed"
 	fi
-	# sha256sum --help
-	# curl "${curl_opts[@]}" "$checksum_url" |
-	# 	grep "${platform}_${arch}" |
-	# 	sha256sum -c ||
-	# 	fail "checksum validation failed"
-	popd
-	mv "${outdir}/$tmp_filename" "$filename"
 }
 
 install_version() {
