@@ -76,6 +76,7 @@ download_release() {
 	pushd "$outdir"
 	curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}"
+	sha256sum --help
 	curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
 		sha256sum -c ||
