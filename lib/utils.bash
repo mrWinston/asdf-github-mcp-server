@@ -75,6 +75,8 @@ download_release() {
 	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
 	pushd "$outdir"
 	curl "${curl_opts[@]}" "$checksum_url" |
+		grep "${platform}_${arch}"
+	curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
 		sha256sum -c ||
 		fail "checksum validation failed"
