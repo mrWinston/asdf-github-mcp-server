@@ -74,13 +74,24 @@ download_release() {
 
 	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
 	pushd "$outdir"
-	curl "${curl_opts[@]}" "$checksum_url" |
-		grep "${platform}_${arch}"
-	sha256sum --help
-	curl "${curl_opts[@]}" "$checksum_url" |
+
+	expectedSHA="$(curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
-		sha256sum -c ||
+		cut -d " " -f 1
+	)"
+	actualSHA="$(sha256sum "$tmp_filename" | cut -d " " -f 1)"
+
+	if [[ "$actualSHA" != "$expectedSHA" ]]; then
+		echo "Checksums don't match:"
+		echo "expected: $expectedSHA"
+		echo "actual  : $actualSHA"
 		fail "checksum validation failed"
+	fi
+	# sha256sum --help
+	# curl "${curl_opts[@]}" "$checksum_url" |
+	# 	grep "${platform}_${arch}" |
+	# 	sha256sum -c ||
+	# 	fail "checksum validation failed"
 	popd
 	mv "${outdir}/$tmp_filename" "$filename"
 }
