@@ -60,7 +60,6 @@ download_release() {
 	platform="$(get_platform)"
 	arch="$(get_arch)"
 
-
 	# release url: https://github.com/github/github-mcp-server/releases/download/v2.0.3/github-mcp-server_Linux_x86_64.tar.gz
 	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_${platform}_${arch}.tar.gz"
 
@@ -71,9 +70,10 @@ download_release() {
 
 	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
 
-	expectedSHA="$(curl "${curl_opts[@]}" "$checksum_url" |
-		grep "${platform}_${arch}" |
-		cut -d " " -f 1
+	expectedSHA="$(
+		curl "${curl_opts[@]}" "$checksum_url" |
+			grep "${platform}_${arch}" |
+			cut -d " " -f 1
 	)"
 	actualSHA="$(sha256sum "$filename" | cut -d " " -f 1)"
 
