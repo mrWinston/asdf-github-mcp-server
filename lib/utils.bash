@@ -60,7 +60,8 @@ download_release() {
 	platform="$(get_platform)"
 	arch="$(get_arch)"
 
-	outdir="$(dirname "$(realpath "$filename")")"
+	# outdir="$(dirname "$(realpath "$filename")")"
+	outdir="$(dirname "$filename")"
 	tmp_filename="${TOOL_NAME}_${platform}_${arch}.tar.gz"
 
 	# release url: https://github.com/github/github-mcp-server/releases/download/v2.0.3/github-mcp-server_Linux_x86_64.tar.gz
@@ -72,7 +73,7 @@ download_release() {
 	curl "${curl_opts[@]}" -o "${outdir}/$tmp_filename" -C - "$url" || fail "Could not download $url"
 
 	echo "* Downloading $TOOL_NAME checksums ${checksum_url}"
-	pushd "$(dirname "$(realpath "$filename")")"
+	pushd "$outdir"
 	curl "${curl_opts[@]}" "$checksum_url" |
 		grep "${platform}_${arch}" |
 		sha256sum -c ||
